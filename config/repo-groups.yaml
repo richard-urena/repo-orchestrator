@@ -1,19 +1,79 @@
 base_path: /Users/richard/Desktop/git/managed-repos
 
 blueprints:
-  learning-default:
-    license: mit
-    gitignore: Python
+
+  showcase-protected:
     visibility: public
+    license: none
+    gitignore: Python
     has_issues: false
     has_wiki: false
-    topics:
-      - machine-learning
-      - applied-ml
+    intent: "Public portfolio showcase. Implementation protected. No reuse rights granted."
+
+  open-learning:
+    visibility: public
+    license: mit
+    gitignore: Python
+    has_issues: true
+    has_wiki: true
+    intent: "Open experimentation and learning. Permissive reuse allowed."
+
+  incubation-private:
+    visibility: private
+    license: none
+    gitignore: Python
+    has_issues: false
+    has_wiki: false
+    intent: "Private incubation of potentially monetizable systems."
+
+  research-sandbox:
+    visibility: public
+    license: none
+    gitignore: Python
+    has_issues: true
+    has_wiki: false
+    intent: "Research-focused experimentation aligned with academic learning."
+
 
 projects:
+
   ml-series:
+    description: "Applied machine learning use cases across business and research domains."
+
     repos:
+
       - name: ml-usecases-in-healthcare
-        blueprint: learning-default
-        description: "Healthcare ML experimentation."
+        blueprint: showcase-protected
+        description: "Applied ML experimentation in healthcare diagnostics, prediction, and optimization."
+
+      - name: ml-usecases-in-finance
+        blueprint: showcase-protected
+        description: "Applied ML experimentation in finance and quantitative modeling."
+
+      - name: ml-usecases-in-real-estate
+        blueprint: showcase-protected
+        description: "Applied ML use cases in property valuation and investment analytics."
+
+      - name: ml-usecases-in-call-center-analytics
+        blueprint: showcase-protected
+        description: "ML systems for call center analytics and voice platform intelligence."
+
+      - name: ml-usecases-in-crypto-markets
+        blueprint: showcase-protected
+        description: "Applied ML experimentation in crypto and digital asset markets."
+
+      - name: ml-usecases-in-personal-finance-tracker
+        blueprint: showcase-protected
+        description: "ML-powered personal finance tracking and forecasting systems."
+
+      - name: ml-usecases-in-student-loan-optimization
+        blueprint: showcase-protected
+        description: "Optimization and ML modeling for student loan consolidation strategies."
+
+      - name: ml-usecases-in-blackjack
+        blueprint: research-sandbox
+        description: "Probabilistic modeling and reinforcement learning strategies applied to blackjack."
+
+      - name: ml-usecases-in-knowledge-based-agents
+        blueprint: research-sandbox
+        description: "ML experimentation applied to knowledge-based AI and agent systems."
