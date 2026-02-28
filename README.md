@@ -10,13 +10,13 @@ This tool manages the lifecycle of a structured set of repositories using:
 - Safe reconciliation logic
 - Guardrails for governance and protection
 
-It is designed to scale domain portfolios (e.g., applied ML business use cases) while preserving architectural boundaries between public showcase, protected implementation, and private incubation.
+It behaves like a lightweight infrastructure-as-code system for GitHub repositories.
 
 ---
 
-# Core Philosophy
+# Architecture Overview
 
-This tool separates **desired state**, **operational state**, and **execution logic**.
+This system separates:
 
 | Concern | File |
 |----------|------|
@@ -24,24 +24,23 @@ This tool separates **desired state**, **operational state**, and **execution lo
 | Operational State | `config/repo-state.yaml` |
 | Execution Engine | `orchestrator.py` |
 
-It behaves like a lightweight infrastructure-as-code system for GitHub repositories.
+Execution model:
 
-The configuration defines what should exist.  
-The state file tracks what currently exists.  
-The orchestrator reconciles the two.
+```
+repo-groups.yaml  → Desired State
+repo-state.yaml   → Lifecycle State
+orchestrator.py   → Reconciliation Engine
+```
 
----
+Flow:
 
-# What This Tool Does
-
-- Creates repositories if they do not exist
-- Applies blueprint-based settings (visibility, license, gitignore, etc.)
-- Clones repositories into a managed directory
-- Tracks lifecycle state (`CREATED`, `READY`, etc.)
-- Enforces `locked` repositories
-- Prevents touching unmanaged repositories
-- Fails fast on invalid blueprint references
-- Designed for future automation via Copilot or agent systems
+1. Load desired configuration
+2. Validate blueprint references
+3. Load lifecycle state
+4. Compare desired vs actual (GitHub + filesystem)
+5. Determine required actions
+6. Apply changes (if instructed)
+7. Update lifecycle state
 
 ---
 
@@ -50,8 +49,8 @@ The orchestrator reconciles the two.
 ```
 repo-orchestrator/
 ├── config/
-│   ├── repo-groups.yaml   # Desired configuration (manual edits)
-│   └── repo-state.yaml    # Lifecycle state (system-managed, committed)
+│   ├── repo-groups.yaml
+│   └── repo-state.yaml
 │
 ├── orchestrator.py
 ├── pyproject.toml
@@ -66,13 +65,13 @@ Managed repositories live under:
 /Users/<user>/Desktop/git/managed-repos
 ```
 
-Only this directory is touched by the orchestrator.
+The orchestrator **will not modify repositories outside this directory.**
 
 ---
 
-# Configuration Model
+# Configuration
 
-## 1. repo-groups.yaml (Declarative Desired State)
+## repo-groups.yaml (Desired State)
 
 Defines:
 
@@ -80,22 +79,19 @@ Defines:
 - Blueprints
 - Projects
 - Repository definitions
-- Blueprint references
 
-Blueprints define repository behavior once and are reused per repository.
+Blueprints define behavior once and are reused per repository.
 
-Example blueprint:
+Example:
 
 ```yaml
 showcase-protected:
   visibility: public
   license: none
   gitignore: Python
-  has_issues: false
-  has_wiki: false
 ```
 
-Repositories reference them:
+Repositories reference a blueprint:
 
 ```yaml
 - name: ml-usecases-in-healthcare
@@ -103,11 +99,11 @@ Repositories reference them:
   description: "Applied ML experimentation in healthcare."
 ```
 
-This prevents duplication and enforces governance consistency.
+All repositories must reference a valid blueprint.
 
 ---
 
-## 2. repo-state.yaml (Operational State)
+## repo-state.yaml (Operational State)
 
 Tracks runtime metadata:
 
@@ -123,18 +119,88 @@ repos:
 Fields:
 
 - `status` → lifecycle state
-- `locked` → prevents modification or reconciliation
+- `locked` → prevents reconciliation
 - `last_applied` → audit timestamp
 
-This file is committed for auditability and traceability.
+This file is committed for auditability.
 
-The orchestrator updates this file intentionally and predictably.
+---
+
+# Running the Tool
+
+All commands are executed using `uv`.
+
+## Basic Usage
+
+### Plan
+
+Shows what actions would be taken without modifying anything:
+
+```
+uv run python orchestrator.py plan
+```
+
+### Apply
+
+Creates missing repositories and clones them locally:
+
+```
+uv run python orchestrator.py apply
+```
+
+---
+
+## Optional Arguments
+
+### Limit to a Specific Project
+
+```
+uv run python orchestrator.py plan --project ml-series
+```
+
+```
+uv run python orchestrator.py apply --project ml-series
+```
+
+This restricts reconciliation to a single project block in `repo-groups.yaml`.
+
+---
+
+# Locked Repositories
+
+If a repository is marked:
+
+```yaml
+locked: true
+```
+
+The orchestrator will:
+
+- Skip apply operations
+- Skip pull operations
+- Skip reconciliation
+- Still display it during plan
+
+This prevents unnecessary checks and modifications.
+
+Future support may include a `--force` override flag.
+
+---
+
+# Safety Guarantees
+
+- Only operates within configured base path
+- Fails if blueprint reference is invalid
+- Does not mutate desired configuration
+- Lifecycle state tracked explicitly
+- Designed to avoid destructive operations
+- Clear separation between desired config and runtime state
 
 ---
 
 # Blueprint Strategy
 
-Blueprints encode repository intent and legal posture.
+Blueprints encode repository intent:
 
 ### showcase-protected
 - Public visibility
@@ -145,7 +211,7 @@ Blueprints encode repository intent and legal posture.
 ### open-learning
 - Public
 - MIT licensed
-- Open experimentation allowed
+- Open experimentation
 
 ### incubation-private
 - Private
@@ -153,89 +219,51 @@ Blueprints encode repository intent and legal posture.
 - Monetization incubation
 
 ### research-sandbox
-- Public research repositories
-- Academic-aligned experiments
-- Flexible experimentation
-
-This structure separates:
-- Public portfolio work
-- Protected business implementations
-- Private incubation
+- Public research repos
 - Academic experimentation
+
+Blueprints allow governance without repetition.
 
 ---
 
-# Commands
+# Environment Management
 
-All commands are executed via `uv`.
+This project uses `uv` for dependency and environment management.
 
-## Plan
-
-Shows reconciliation actions without applying changes:
+Run:
 
 ```
 uv run python orchestrator.py plan
 ```
 
-## Apply
+No manual virtual environment activation required.
 
-Creates missing repositories and clones locally:
+Dependencies are defined in:
 
 ```
-uv run python orchestrator.py apply
+pyproject.toml
 ```
 
-Respects:
+Locked via:
 
-- Locked repositories
-- Base path enforcement
-- Blueprint validation
-- State tracking
+```
+uv.lock
+```
 
 ---
 
-# Safety Guarantees
+# Future Enhancements
 
-- Will not modify repositories outside `managed-repos`
-- Fails if blueprint reference is invalid
-- Does not mutate desired configuration
-- Uses explicit lifecycle tracking
-- Designed to avoid destructive operations
-- Separation between desired config and runtime state
-
----
-
-# Architecture Overview
-
-This system follows a simplified reconciliation model:
-
-```
-repo-groups.yaml  → Desired State
-repo-state.yaml   → Observed / Lifecycle State
-orchestrator.py   → Reconciliation Engine
-```
-
-Execution flow:
-
-1. Load desired configuration
-2. Validate blueprint references
-3. Load lifecycle state
-4. Compare desired vs actual (GitHub + filesystem)
-5. Determine required actions
-6. Apply changes (if instructed)
-7. Update lifecycle state file
-
-Future architecture extensions may include:
+Planned capabilities:
 
 - Drift detection
 - Metadata reconciliation
-- Selective project execution
 - Override flags (`--force`)
 - Repo archival
-- Automated PR scaffolding
-- Agent-driven orchestration
-- Copilot task delegation
 - Multi-environment support
+- Agent-driven orchestration
+- Copilot task automation
+- CI integration
 
 ---
 
@@ -247,10 +275,8 @@ This tool is built to:
 - Protect business-applied implementations
 - Separate academic learning from monetizable systems
 - Enable structured GitHub governance
-- Provide deterministic repo lifecycle control
-- Serve as foundation for automation and AI-driven orchestration
-
-It is intentionally lightweight, explicit, and extensible.
+- Provide deterministic lifecycle control
+- Support automation and AI-driven operations
 
 ---
 
@@ -266,10 +292,10 @@ Georgia Tech OMSCS – Machine Learning & Analytics
 
 Copyright (c) 2026 Richard Urena
 
-This repository and its contents are licensed under the MIT License.
+This repository is licensed under the MIT License.
 
-The license applies to the orchestration framework and tooling contained in this repository only.
+The license applies only to this orchestration framework.
 
 Managed repositories created by this tool may use different licensing strategies as defined by their respective blueprints.
 
-See the LICENSE file for full terms.
+See LICENSE file for full terms.
