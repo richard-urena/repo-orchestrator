@@ -1,0 +1,19 @@
+base_path: /Users/richard/Desktop/git/managed-repos
+
+blueprints:
+  learning-default:
+    license: mit
+    gitignore: Python
+    visibility: public
+    has_issues: false
+    has_wiki: false
+    topics:
+      - machine-learning
+      - applied-ml
+
+projects:
+  ml-series:
+    repos:
+      - name: ml-usecases-in-healthcare
+        blueprint: learning-default
+        description: "Healthcare ML experimentation."
