@@ -1,1 +1,55 @@
-repos: {}
+repos:
+  ml-usecases-in-healthcare:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
+  ml-usecases-in-finance:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
+  ml-usecases-in-real-estate:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
+  ml-usecases-in-call-center-analytics:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
+  ml-usecases-in-crypto-markets:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
+  ml-usecases-in-personal-finance-tracker:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
+  ml-usecases-in-student-loan-optimization:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
+  ml-usecases-in-blackjack:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
+  ml-usecases-in-knowledge-based-agents:
+    status: CREATED
+    locked: false
+    blueprint_applied: incubation-private
+    visibility_applied: private
+    last_applied: '2026-02-28'
